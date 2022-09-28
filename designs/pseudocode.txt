@@ -1,0 +1,530 @@
+START
+	DEFINE FUNCTION home():
+		PRINT "========== WELCOME TO ONLINE CAR RENTAL SYSTEM (OCRS) ==========\n"
+		PRINT "Hi, who is using the system?"
+		PRINT "\t1. Admin\n\t2. Customers (Whether Registered or Not)\n\t3. Registered Customers\n"
+		PRINT "I am a/an (please enter 1/2/3):"
+		READ input_choice
+		IF (input_choice == '1') THEN
+			DEFINE FUNCTION admin.login()
+				PRINT "==============================================="
+				PRINT "========== WELCOME TO THE ADMIN PAGE =========="
+				PRINT "===============================================\n"
+				PRINT "Hi, please verify your identity by entering username and password."
+				PRINT "Your username: "
+				READ input_username
+				PRINT "Your password: "
+				READ input_password
+				PRINT "\n"
+				IF (input_username == 'admin' AND input_password == 'nimda') THEN
+					DEFINE FUNCTION admin.menu()
+						PRINT "===================================================="
+						PRINT "========== WELCOME TO THE ADMIN HOME PAGE =========="
+						PRINT "====================================================\n"
+						PRINT "Welcome, dear admin. Please choose what you want to do from below:\n"
+						PRINT "1. Add Car to be rented out"
+						PRINT "2. Modify Car Details"
+						PRINT "3. Display All records")
+						PRINT "4. Search Specific record"
+						PRINT "5. Return a Rented Car"
+						PRINT "6. Exit\n"
+						PRINT "I want to (Enter 1/2/3/4/5/6): "
+						READ input_choice
+						PRINT ""
+						IF (input_choice == "1") THEN
+							DEFINE FUNCTION admin.add_car():
+								PRINT "Please enter detail of the car:\n"
+								PRINT "Car Model: "
+								READ input_car_model
+								PRINT "Car Type: "
+								READ input_car_type
+								PRINT "Car Transmission (A/M): "
+								READ input_car_transmission.upper()
+								WHILE NOT (input_car_transmission == "A" OR input_car_transmission == "M") THEN
+									PRINT "Invalid value! Please enter A or M only."
+									PRINT "Car Transmission (A/M): "
+									input_car_transmission.upper()
+								ENDWHILE
+								PRINT "Hourly Rent Rate: RM"
+								READ input_hourly_rate
+								WHILE NOT (input_hourly_rate.isdigit()) THEN
+									PRINT "Invalid value! Please enter again."
+									PRINT "Hourly Rent Rate: RM"
+									READ input_hourly_rate
+								ENDWHILE
+								file_handling.add_car(input_car_model, input_car_type, input_car_transmission, input_hourly_rate)
+								PRINT ""
+								PRINT "Enter Y to add another car: "
+								READ input_continue.upper()
+								PRINT "\n"
+								IF (input_continue == "Y") THEN
+									admin.add_car()
+								ELSE
+									PRINT "Successfully added car(s)!\n\n"
+									admin.menu()
+								ENDIF
+						ELSE
+							IF (input_choice == "2") THEN
+								DEFINE FUNCTION admin.mod_car()
+									cars_data = file_handling.get_cars()
+									IF NOT cars_data THEN
+										PRINT "There is car registered yet! Taking you back to menu...\n\n"
+										admin.menu()
+									ELSE
+										FOR car_data IN cars_data
+											PRINT car_data.replace(",","\t").replace("\n","")
+										END FOR
+									ENDIF
+									PRINT ""
+									PRINT "Please enter a car id of car to be modified (Enter X to back):"
+									READ input_car_id.upper()
+									FoundCar = False
+									TargetCarDataList = []
+									FOR car_data IN cars_data
+										car_data_list = car_data.split(',')
+										IF (car_data_list[0] == input_car_id) THEN
+											FoundCar = True
+											TargetCarDataList = car_data_list
+										ENDIF
+									END FOR
+									IF FoundCar THEN
+										PRINT "\n\nModifiable Car Information:\n\t1. Car Model\n\t2. Car Type\n\t3. Car Trasmission\n\t4. Hourly Rate"
+										accepted_input_mod_type = ["1","2","3","4"]
+										PRINT "\nWhich information you want to modify (Enter 1/2/3/4): "
+										READ input_mod_type
+										WHILE NOT (input_mod_type IN accepted_input_mod_type) THEN
+											PRINT "\nInvalid input! Please try again.\n\n"
+											PRINT "\nWhich information you want to modify (Enter 1/2/3/4): "
+											READ input_mod_type
+										ENDWHILE
+										PRINT "What is the new value: "
+										READ input_mod_value
+										IF (input_mod_type == "3") THEN
+											input_mod_value = input_mod_value.upper()
+											WHILE NOT (input_mod_value == "A" OR input_mod_value == "M") THEN
+												PRINT "Invalid value! Please enter A or M only."
+												PRINT "What is the new value: "
+												READ input_mod_value
+											ENDWHILE
+										ENDIF
+										file_handling.mod_car(input_car_id, input_mod_type, input_mod_value)
+										PRINT "\nSuccessfully modified car detail!"
+									ELSE
+										IF (input_car_id.upper() == "X") THEN
+											PRINT "\n\n"
+											admin.menu()
+										ELSE
+											PRINT "\nCar with this car id not found! Please try again.\n\n"
+											admin.mod_car()
+										ENDIF
+									ENDIF
+									PRINT ""
+									PRINT "Enter Y to modify another car's detail: "
+									READ input_continue.upper()
+									PRINT "\n"
+									IF (input_continue == "Y") THEN
+										admin.mod_car()
+									ELSE
+										admin.menu()
+									ENDIF
+							ELSE
+								IF (input_choice == "3") THEN
+									DEFINE FUNCTION admin.display_records()
+										PRINT "Hi, what record you want to check?"
+										PRINT "\ta. Cars available for Rent\n\tb. Customer Payment for a specific time duration\n"
+										PRINT "I want to check about (please enter A/B, X to back):"
+										READ input_choice.upper()
+										PRINT "\n"
+										IF (input_choice == "A") THEN
+											cars_data = file_handling.get_cars(rent_available_only=True)
+											IF NOT cars_data:
+												PRINT "There is no car available for rent now! Taking you back..\n"
+												admin.display_records()
+											ELSE
+												FOR car_data IN cars_data
+													PRINT car_data.replace(",","\t").replace("\n","")
+												END FOR
+												PRINT ""
+												admin.menu()
+											ENDIF
+										ELSE
+											IF (input_choice == "B") THEN
+												PRINT "Display customer payment of recent how many days: "
+												READ input_recent_days
+												WHILE NOT (input_recent_days.isdigit()) THEN
+													PRINT "Invalid value! Please enter again."
+													PRINT "Display customer payment of recent how many days: "
+													READ input_recent_days
+												ENDWHILE
+												PRINT "\n"
+												orders_data = file_handling.get_orders()
+												IF NOT orders_data THEN
+													PRINT "No customer payment found in recent "+input_recent_days+" days! Taking you back..\n"
+												ELSE
+													PRINT "All customer payment in recent "+input_recent_days+" days"
+													PRINT "------------------------------------"
+													FOR order_data IN orders_data
+														order_data_list = order_data.split(',')
+														PRINT "Order ID:"+order_data_list[0]+" (Username:"+order_data_list[1]+"|Full Name:"+file_handling.get_user_data(order_data_list[1], 2)+")\nCar ID:"+order_data_list[2]+"  Rent Hour:"+order_data_list[3]+"  Total Amount:RM"+order_data_list[4]+"  Status:"+order_data_list[5]+"  Order Expiration:"+order_data_list[6].strip("\n")+"\n"
+													END FOR
+													PRINT "\n"
+												ENDIF
+												admin.menu()
+											ELSE
+												IF (input_choice == "X") THEN
+													PRINT "\n"
+													admin.menu()
+												ELSE
+													PRINT "Invalid input! Please enter again.\n\n"
+													admin.display_records()
+												ENDIF
+											ENDIF
+										ENDIF
+								ELSE
+									IF (input_choice == "4") THEN
+										PRINT "Hi, what record you want to search for?"
+										PRINT "\ta. Specific Car Booking\n\tb. Specific Customer Payment\n"
+										PRINT "I want to search about (please enter A/B, X to back):"
+										READ input_choice.upper()
+										PRINT "\n"
+										IF (input_choice == "A") THEN
+											cars_data = file_handling.get_cars()
+											IF NOT cars_data THEN
+												PRINT "There is no car available yet! Taking you back..\n"
+												admin.search_records()
+											ELSE
+												FOR car_data IN cars_data
+													PRINT car_data.replace(",","\t").replace("\n","")
+												END FOR
+												PRINT ""
+												PRINT ""
+												PRINT "Please enter a car id of rented car to be searched (Enter X to back):"
+												READ input_car_id.upper()
+												FoundCar = False
+												TargetCarDataList = []
+												FOR car_data IN cars_data
+													car_data_list = car_data.split(',')
+													IF (car_data_list[0] == input_car_id) THEN
+														FoundCar = True
+														TargetCarDataList = car_data_list
+													ENDIF
+												END FOR
+												IF FoundCar THEN
+													PRINT "\n"
+													orders_data = file_handling.get_orders(specific_car=input_car_id)
+													IF NOT orders_data THEN
+														PRINT "No records of this car found! Taking you back..\n"
+													ELSE
+														PRINT "All record of the car "+input_car_id
+														PRINT "------------------------------------"
+														FOR order_data IN orders_data
+															order_data_list = order_data.split(',')
+															PRINT "Order ID:"+order_data_list[0]+" (Username:"+order_data_list[1]+"|Full Name:"+file_handling.get_user_data(order_data_list[1], 2)+")\nCar ID:"+order_data_list[2]+"  Rent Hour:"+order_data_list[3]+"  Total Amount:RM"+order_data_list[4]+"  Status:"+order_data_list[5]+"  Order Expiration:"+order_data_list[6].strip("\n")+"\n"
+														END FOR
+														PRINT "\n"
+													ENDIF
+													admin.menu()
+												ELSE
+													IF (input_car_id.upper() == "X") THEN
+														PRINT "\n\n"
+														admin.menu()
+													ELSE
+														PRINT "\nCar with this car id not found! Please try again.\n\n"
+														admin.search_records()
+													ENDIF
+												ENDIF
+											ENDIF
+										ELSE
+											IF (input_choice == "B") THEN
+												PRINT "Please enter a username of customer to be searched (Enter X to back):"
+												READ input_user_id
+												PRINT "\n"
+												orders_data = file_handling.get_orders(specific_customer=input_user_id)
+												IF NOT orders_data THEN
+													PRINT "No records of this user found! Taking you back..\n"
+												ELSE
+													PRINT "All record of the user "+input_user_id
+													PRINT "------------------------------------"
+													FOR order_data IN orders_data
+														order_data_list = order_data.split(',')
+														PRINT "Order ID:"+order_data_list[0]+" (Username:"+order_data_list[1]+"|Full Name:"+file_handling.get_user_data(order_data_list[1], 2)+")\nCar ID:"+order_data_list[2]+"  Rent Hour:"+order_data_list[3]+"  Total Amount:RM"+order_data_list[4]+"  Status:"+order_data_list[5]+"  Order Expiration:"+order_data_list[6].strip("\n")+"\n"
+													END FOR
+													PRINT "\n"
+												ENDIF
+											ELSE
+												IF (input_car_id.upper() == "X") THEN
+													PRINT "\n"
+													admin.menu()
+												ELSE
+													PRINT "Invalid input! Please enter again.\n\n"
+													admin.search_records()
+												ENDIF
+											ENFIF
+										ENDIF
+									ELSE
+										IF (input_choice == "5") THEN
+											DEFINE FUNCTION return_rented_car
+												IF NOT cars_data THEN
+													PRINT "There is no car rented yet! Taking you back to menu...\n\n"
+													admin.menu()
+												ELSE
+													PRINT "Here is a list of all rented car:"
+													FOR car_data IN cars_data
+														PRINT car_data.replace(",","\t").replace("\n","")
+													END FOR
+													PRINT ""
+												ENDIF
+												PRINT ""
+												PRINT "Please enter a car id of rented car to be returned (Enter X to back):"
+												READ input_car_id.upper()
+												FoundCar = False
+												TargetCarDataList = []
+												FOR car_data IN cars_data
+													car_data_list = car_data.split(',')
+													IF (car_data_list[0] == input_car_id) THEN
+														FoundCar = True
+														TargetCarDataList = car_data_list
+													ENDIF
+												END FOR
+												IF FoundCar THEN
+													file_handling.return_rented_car(input_car_id)
+													PRINT "\nSuccessfully returned the car!"
+												ELSE
+													IF (input_car_id.upper() == "X") THEN
+														PRINT "\n\n"
+														admin.menu()
+													ELSE
+														PRINT "\nCar with this car id not found! Please try again.\n\n"
+														admin.return_rented_car()
+													ENDIF
+												ENDIF
+												PRINT ""
+												PRINT "Enter Y to return another rented car: "
+												READ input_continue.upper()
+												IF (input_continue.upper() == "Y") THEN
+													admin.return_rented_car()
+												ELSE
+													admin.menu()
+												ENDIF
+										ELSE
+											IF (input_choice == "6") THEN
+												PRINT "Good Bye and Have a nice day!"
+												exit()
+											ELSE
+												PRINT "Invalid input! Please enter again.\n\n"
+												admin.menu()
+											ENDIF
+										ENDIF
+									ENDIF
+								ENDIF
+							ENDIF
+						ENDIF
+				ELSE
+					PRINT "Sorry, the username or password is invalid."
+					PRINT "Enter T to try again: "
+					READ input_tryagain.upper()
+					PRINT ""
+					IF (input_tryagain == "T") THEN
+						admin.login()
+					ELSE
+						PRINT "Good Bye and Have a nice day!"
+						exit()
+					ENDIF
+				ENDIF
+		ELSE
+			IF (input_choice == '2') THEN
+				normal_customer.menu()
+			ELSE
+				IF (input_choice == '3') THEN
+					DEFINE FUNCTION registered_customer.login()
+						PRINT "==============================================="
+						PRINT "=== WELCOME TO THE REGISTERED CUSTOMER PAGE ==="
+						PRINT "===============================================\n"
+						PRINT "Hi, please verify your identity by entering username and password."
+						PRINT "Your username: "
+						READ input_username
+						PRINT "Your password: "
+						READ input_password
+						PRINT "\n"
+						IF file_handling.login_customer(input_username, password=input_password) THEN
+							global Logged_In_Username
+							Logged_In_Username = input_username
+							registered_customer.menu()
+						ELSE
+							PRINT "Sorry, the username or password is invalid."
+							PRINT "Enter T to try again: "
+							READ input_tryagain.upper()
+							print ""
+							IF (input_tryagain == "T") THEN
+								DEFINE FUNCTION registered_customer.login()
+									PRINT "===================================================="
+									PRINT "=== WELCOME TO THE REGISTERED CUSTOMER HOME PAGE ==="
+									PRINT "====================================================\n"
+									PRINT "Welcome, dear customer. Please choose what you want to do from below:\n"
+									PRINT "1. View Personal Rental History"
+									PRINT "2. View Detail of Cars to be Rented Out"
+									PRINT "3. Select and Book a car for a specific duration"
+									PRINT "4. Do payment to confirm Booking"
+									PRINT "5. Exit\n"
+									PRINT "I want to (Enter 1/2/3/4/5): "
+									READ input_choice
+									PRINT ""
+									IF (input_choice == "1") THEN
+										DEFINE FUNCTION registered_customer.view_personal_rental_history()
+											orders_data = file_handling.get_orders(history_username=Logged_In_Username)
+											IF NOT orders_data THEN
+												PRINT "You have no rental history! Taking you back..\n"
+											ELSE
+												PRINT "All your rental record is/are shown below:"
+												FOR order_data IN orders_data
+													order_data_list = order_data.split(',')
+													PRINT "Order ID:"+order_data_list[0]+"  Car ID:"+order_data_list[2]+"  Rent Hour(s):"+order_data_list[3]+"  Total Amount:RM"+order_data_list[4]+"  Status:"+order_data_list[5]+"  Expiration:"+order_data_list[6].strip("\n")
+												END FOR
+												print("\n")
+											ENDIF
+											registered_customer.menu()
+									ELSE
+										IF (input_choice == "2") THEN
+											DEFINE FUNCTION registered_customer.view_cars_available()
+												cars_data = file_handling.get_cars(rent_available_only=True)
+												IF NOT cars_data THEN
+													PRINT "There is no car available for rent now! Taking you back..\n"
+													registered_customer.menu()
+												ELSE
+													PRINT "All cars available is/are shown below:"
+													FOR car_data in cars_data
+														PRINT car_data.replace(",","\t").replace("\n","")
+													END FOR
+													PRINT "\n"
+													registered_customer.menu()
+												ENDIF
+										ELSE
+											IF (input_choice == "3") THEN
+												DEFINE FUNCTION registered_customer.rent_car()
+													PRINT "All cars available is/are shown below:"
+													cars_data = file_handling.get_cars(rent_available_only=True)
+													IF NOT cars_data THEN
+														PRINT "There is no car available for rent now! Taking you back..\n"
+														registered_customer.menu()
+													ELSE
+														FOR car_data IN cars_data
+															PRINT car_data.replace(",","\t").replace("\n","")
+														END FOR
+														PRINT "\n"
+													ENDIF
+													PRINT "Please enter a car id of car to be rented (Enter X to back):"
+													READ input_car_id.upper()
+													FoundCar = False
+													TargetCarDataList = []
+													FOR car_data IN cars_data
+														car_data_list = car_data.split(',')
+														IF (car_data_list[0] == input_car_id) THEN
+															FoundCar = True
+															TargetCarDataList = car_data_list
+														ENDIF
+													END FOR
+													IF FoundCar THEN
+														PRINT "Please enter number of hours you will rent: "
+														READ input_rent_hour
+														WHILE NOT (input_rent_hour.isdigit()) THEN
+															PRINT "Invalid value! Please enter again."
+															PRINT "Please enter number of hours you will rent: "
+															READ input_rent_hour
+														FinalAmount = int(TargetCarDataList[4])*int(input_rent_hour)
+														PRINT "Successfully booked the car (ID: "+TargetCarDataList[0]+" ; Model: "+TargetCarDataList[1]+").\n"
+														PRINT "Please do your payment (RM"+str(FinalAmount)+") within 24 hours to confirm booking.\n\n"
+														file_handling.rent_car(Logged_In_Username, input_car_id, input_rent_hour, str(FinalAmount))
+														registered_customer.menu()  
+													ELSE
+														IF (input_car_id.upper() == "X") THEN
+															PRINT "\n\n"
+															registered_customer.menu()
+														ELSE
+															PRINT "\nCar with this car id not found! Please try again.\n\n"
+															registered_customer.rent_car()
+														ENDIF
+													ENDIF
+											ELSE
+												IF (input_choice == "4") THEN
+													DEFINE FUNCTION registered_customer.do_payment()
+														orders_data = file_handling.get_orders(unpaid_username=Logged_In_Username)
+														IF NOT orders_data THEN
+															PRINT "You have no unpaid orders now! Note that orders will be terminated if you didn't complete your payment within 24 hours. Taking you back..\n"
+															registered_customer.menu()
+														ELSE
+															PRINT "All your unpaid order is/are shown below:"
+															FOR order_data IN orders_data
+																order_data_list = order_data.split(',')
+																PRINT"Order ID: "+order_data_list[0]+"\tAmount to Pay: "+order_data_list[4]
+															END FOR
+															PRINT "\n"
+															PRINT "Please enter an order id of order to be paid (Enter X to back):"
+															READ input_order_id.upper()
+															FoundOrder = False
+															TargetOrderDataList = []
+															FOR order_data IN orders_data
+																order_data_list = order_data.split(',')
+																IF (order_data_list[0] == input_order_id) THEN
+																	FoundOrder = True
+																	TargetOrderDataList = order_data_list
+																ENDIF
+															END FOR
+															IF FoundOrder THEN
+																PRINT "\nPlease provide your card detail to pay RM"+TargetOrderDataList[4]
+																PRINT "Please enter your card number: "
+																READ input_card_number
+																WHILE NOT (input_card_number.isdigit()) THEN
+																	PRINT "Invalid value! Please enter again."
+																	PRINT "Please enter your card number: "
+																	READ input_card_number
+																PRINT "Please enter your card expiration date (MM/YYYY): "
+																READ input_card_valid
+																WHILE NOT (input_card_valid.isdigit()) THEN
+																	PRINT "Invalid value! Please enter again."
+																	PRINT "Please enter your card expiration date (MM/YYYY): "
+																	READ input_card_valid
+																PRINT Please enter your card cvc: "
+																READ input_card_cvc
+																WHILE NOT (input_card_cvc.isdigit()) THEN
+																	PRINT "Invalid value! Please enter again."
+																	PRINT Please enter your card cvc: "
+																	READ input_card_cvc
+																file_handling.pay_order(input_order_id)
+																PRINT "\n\nSuccessfully confirmed the order (ID: "+TargetOrderDataList[0]+").\n"
+																PRINT "Please return the car by "+TargetOrderDataList[6]+"\n"
+																registered_customer.menu()  
+															ELSE
+																IF (input_car_id.upper() == "X") THEN
+																	PRINT "\n\n"
+																	registered_customer.menu()
+																ELSE
+																	PRINT "\nCar with this car id not found! Please try again.\n\n"
+																	registered_customer.do_payment()
+																ENDIF
+															ENDIF
+														ENDIF
+												ELSE
+													IF (input_choice == "5") THEN
+														PRINT "Good Bye and Have a nice day!"
+														exit()
+													ELSE
+														PRINT "Invalid input! Please enter again.\n\n"
+														registered_customer.menu()
+													ENDIF
+												ENDIF
+											ENDIF
+										ENDIF
+									ENDIF
+							ELSE
+								PRINT "Good Bye and Have a nice day!"
+								exit()
+							ENDIF
+						ENDIF
+				ELSE
+					PRINT "Invalid input! Please enter again.\n\n"
+					home()
+				ENDIF
+			ENDIF
+		ENDIF
+	home()
+END
