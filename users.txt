@@ -1,0 +1,4 @@
+danding,dandingdayo,Kelvin Ting,F,0162437190,kelvin0719@gmail.com
+danding2,dandingdayo,Jesseline Lim,F,0142497380,jesseline142106@yahoo.com
+josephlow,lowjoseph,Joseph Low,M,01110101150,josephlow@demo.com
+user,user,Joseph,F,0197665555,user@example.com
