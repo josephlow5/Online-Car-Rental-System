@@ -11,6 +11,7 @@ place. SCSR decided to enhance their online Car Rental booking services by allow
 customers to book cars for rent, online. I was required by SCRS to develop a program for the 
 Online Car Rental System (OCSRS) which have 3 types of users and should contains several 
 features. This system will be using Python as its Programming Language. 
+
 This system will be use by 3 types of users, which are the admin, the customers and the 
 registered customers. Admin users will be asked to verify their identity by entering username 
 and password before accessing the system, then they can add car to be rented out into system, 
@@ -27,13 +28,13 @@ or the username of the customer, the system is capable to link cars’ data to o
 manage them very well. Lastly, admins can manually return a rented car by a car id, while 
 cars are actually automatically returned as the system scheduled everything when the order is 
 created. 
+
 As for customers, they are two kind of customer user. The first one is normal customers, 
 including registered and not-registered customer, they are not required to login and they can 
 view all cars available for rent and register as a new customer to access other details in the 
 system. In short, the functionalities available for normal customers are very limited, 
 customers should register as a new customer to access all functionalities designed for 
 customers in the system. As for registered customers, they will need to enter their username 
-P a g e | 4 
 and password when they are entering the system. They can view their personal rental history 
 and view detail of cars to be rented out from the system. They can also select and book a car 
 for a specific duration with the system, there is no charge for booking and the car will be kept 
